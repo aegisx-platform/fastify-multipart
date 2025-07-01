@@ -6,17 +6,17 @@ module.exports = {
       2,
       'always',
       [
-        'feat',     // New feature
-        'fix',      // Bug fix
-        'docs',     // Documentation
-        'style',    // Code style (formatting, etc.)
+        'feat', // New feature
+        'fix', // Bug fix
+        'docs', // Documentation
+        'style', // Code style (formatting, etc.)
         'refactor', // Code refactoring
-        'perf',     // Performance improvements
-        'test',     // Adding or updating tests
-        'chore',    // Maintenance tasks
-        'ci',       // CI/CD changes
-        'build',    // Build system changes
-        'revert'    // Revert changes
+        'perf', // Performance improvements
+        'test', // Adding or updating tests
+        'chore', // Maintenance tasks
+        'ci', // CI/CD changes
+        'build', // Build system changes
+        'revert' // Revert changes
       ]
     ],
     // Subject case (sentence-case, start-case, pascal-case, upper-case, lower-case, camel-case, kebab-case)

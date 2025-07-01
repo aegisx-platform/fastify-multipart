@@ -220,7 +220,8 @@ async function multipartPlugin (fastify, options) {
 
     this.raw.pipe(bb)
 
-    while (!finished || parts.length > 0) {
+    // eslint-disable-next-line no-unmodified-loop-condition
+    while (parts.length > 0 || !finished) {
       if (parts.length > 0) {
         const part = parts.shift()
         if (part.type === 'error') {
@@ -235,7 +236,7 @@ async function multipartPlugin (fastify, options) {
 
   fastify.decorateRequest('cleanupTempFiles', async function (tempFiles) {
     const filesToClean = tempFiles || this[kTempFiles]
-    const cleanupPromises = filesToClean.map(tempPath => 
+    const cleanupPromises = filesToClean.map(tempPath =>
       fs.promises.unlink(tempPath).catch(() => {})
     )
     await Promise.all(cleanupPromises)

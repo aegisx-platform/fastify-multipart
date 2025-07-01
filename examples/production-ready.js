@@ -1,6 +1,6 @@
 /**
  * Production-Ready Example for @aegisx/fastify-multipart
- * 
+ *
  * Comprehensive example showing production patterns including:
  * - Swagger UI integration
  * - Error handling
@@ -8,7 +8,7 @@
  * - Custom upload directory
  * - Performance monitoring
  * - Security considerations
- * 
+ *
  * Run: node examples/production-ready.js
  * Visit: http://localhost:3000/docs
  */
@@ -20,7 +20,7 @@ const multipart = require('../index')
 const swagger = require('@fastify/swagger')
 const swaggerUI = require('@fastify/swagger-ui')
 
-async function start() {
+async function start () {
   // ✅ Register Swagger first
   await fastify.register(swagger, {
     openapi: {
@@ -59,7 +59,7 @@ async function start() {
 
   // ✅ Bypass validation for multipart routes
   fastify.setValidatorCompiler(({ schema, method, url, httpPart }) => {
-    return function validate(data) {
+    return function validate (data) {
       // Skip body validation for upload routes
       if (httpPart === 'body' && url && url.includes('/upload')) {
         return { value: data }
@@ -101,8 +101,8 @@ async function start() {
           file: { type: 'string', format: 'binary', description: 'File to upload' },
           title: { type: 'string', description: 'File title' },
           description: { type: 'string', description: 'File description' },
-          category: { 
-            type: 'string', 
+          category: {
+            type: 'string',
             enum: ['document', 'image', 'video', 'other'],
             description: 'File category'
           }

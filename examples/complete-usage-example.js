@@ -1,6 +1,6 @@
 /**
  * Complete Usage Example for @aegisx/fastify-multipart
- * 
+ *
  * This example demonstrates:
  * - Plugin registration with custom options
  * - Swagger UI integration with working browse buttons
@@ -9,10 +9,10 @@
  * - Text fields as plain strings (not wrapped objects)
  * - Automatic temp file cleanup
  * - Error handling
- * 
+ *
  * Run this example:
  * node examples/complete-usage-example.js
- * 
+ *
  * Then test at:
  * - http://localhost:3100 (API home)
  * - http://localhost:3100/docs (Swagger UI)
@@ -25,335 +25,335 @@ const fastify = require('fastify')({ logger: true })
 const path = require('path')
 const fs = require('fs')
 
-async function start() {
-    // ✅ Register Swagger for API documentation
-    await fastify.register(require('@fastify/swagger'), {
-        openapi: {
-            openapi: '3.0.0',
-            info: {
-                title: 'Test @aegisx/fastify-multipart Plugin',
-                description: 'Testing the real plugin usage',
-                version: '1.0.0'
-            },
-            servers: [{ url: 'http://localhost:3100' }]
-        }
-    })
+async function start () {
+  // ✅ Register Swagger for API documentation
+  await fastify.register(require('@fastify/swagger'), {
+    openapi: {
+      openapi: '3.0.0',
+      info: {
+        title: 'Test @aegisx/fastify-multipart Plugin',
+        description: 'Testing the real plugin usage',
+        version: '1.0.0'
+      },
+      servers: [{ url: 'http://localhost:3100' }]
+    }
+  })
 
-    await fastify.register(require('@fastify/swagger-ui'), {
-        routePrefix: '/docs',
-        uiConfig: {
-            docExpansion: 'full',
-            deepLinking: false
-        }
-    })
+  await fastify.register(require('@fastify/swagger-ui'), {
+    routePrefix: '/docs',
+    uiConfig: {
+      docExpansion: 'full',
+      deepLinking: false
+    }
+  })
 
-    await fastify.register(require('@fastify/static'), {
-        root: path.join(__dirname, 'uploads'),
-        prefix: '/uploads/'
-    })
+  await fastify.register(require('@fastify/static'), {
+    root: path.join(__dirname, 'uploads'),
+    prefix: '/uploads/'
+  })
 
-    // ✅ Register OUR plugin
-    await fastify.register(require('./index.js'), {
-        limits: {
-            fileSize: 10 * 1024 * 1024, // 10MB
-            files: 10,
-            fields: 20
+  // ✅ Register OUR plugin
+  await fastify.register(require('./index.js'), {
+    limits: {
+      fileSize: 10 * 1024 * 1024, // 10MB
+      files: 10,
+      fields: 20
+    },
+    tempDir: path.join(__dirname, 'temp')
+  })
+
+  // ✅ Bypass validation สำหรับ multipart routes
+  fastify.setValidatorCompiler(({ schema, method, url, httpPart }) => {
+    return function validate (data) {
+      if (httpPart === 'body' && url && url.includes('/upload')) {
+        return { value: data }
+      }
+      return { value: data }
+    }
+  })
+
+  // Helper function สำหรับ save file
+  async function saveFile (fileObj, uploadsDir) {
+    const timestamp = Date.now()
+    const fileExtension = path.extname(fileObj.filename || '')
+    const safeFilename = `${timestamp}_${Math.random().toString(36).substring(7)}${fileExtension}`
+    const finalPath = path.join(uploadsDir, safeFilename)
+
+    const buffer = await fileObj.toBuffer()
+    await fs.promises.writeFile(finalPath, buffer)
+
+    return {
+      fileId: `file_${timestamp}_${Math.random().toString(36).substring(7)}`,
+      filename: safeFilename,
+      originalName: fileObj.filename,
+      size: buffer.length,
+      mimetype: fileObj.mimetype,
+      url: `http://localhost:3100/uploads/${safeFilename}`
+    }
+  }
+
+  function ensureUploadsDir () {
+    const uploadsDir = path.join(__dirname, 'uploads')
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true })
+    }
+    return uploadsDir
+  }
+
+  // 🏠 Home
+  fastify.get('/', async () => {
+    return {
+      message: '🎉 Testing @aegisx/fastify-multipart Plugin',
+      version: '1.0.0',
+      plugin: '@aegisx/fastify-multipart',
+      features: [
+        '✅ Text fields เป็น string โดยตรง',
+        '✅ ปุ่ม Browse ใน Swagger UI ทำงานได้',
+        '✅ ไม่มี validation errors',
+        '✅ รองรับ multiple files',
+        '✅ Auto cleanup temp files'
+      ],
+      links: {
+        docs: 'http://localhost:3100/docs',
+        testForm: 'http://localhost:3100/test-form'
+      }
+    }
+  })
+
+  // 📄 Single file upload
+  fastify.post('/upload/single', {
+    schema: {
+      summary: 'อัปโหลดไฟล์เดียว (ใช้ Plugin)',
+      description: 'ทดสอบ plugin @aegisx/fastify-multipart',
+      tags: ['Plugin Test'],
+      consumes: ['multipart/form-data'],
+      body: {
+        type: 'object',
+        properties: {
+          file: {
+            type: 'string',
+            format: 'binary',
+            description: 'ไฟล์ที่ต้องการอัปโหลด'
+          },
+          title: {
+            type: 'string',
+            description: 'ชื่อไฟล์'
+          },
+          description: {
+            type: 'string',
+            description: 'คำอธิบาย'
+          }
         },
-        tempDir: path.join(__dirname, 'temp')
-    })
-
-    // ✅ Bypass validation สำหรับ multipart routes
-    fastify.setValidatorCompiler(({ schema, method, url, httpPart }) => {
-        return function validate(data) {
-            if (httpPart === 'body' && url && url.includes('/upload')) {
-                return { value: data }
+        required: ['file', 'title']
+      },
+      response: {
+        200: {
+          description: 'อัปโหลดสำเร็จ',
+          type: 'object',
+          properties: {
+            success: { type: 'boolean' },
+            message: { type: 'string' },
+            pluginUsed: { type: 'string' },
+            data: {
+              type: 'object',
+              properties: {
+                fileId: { type: 'string' },
+                filename: { type: 'string' },
+                originalName: { type: 'string' },
+                size: { type: 'number' },
+                mimetype: { type: 'string' },
+                url: { type: 'string' },
+                title: { type: 'string' },
+                description: { type: 'string' },
+                debug: {
+                  type: 'object',
+                  properties: {
+                    fieldsReceived: { type: 'array', items: { type: 'string' } },
+                    fileCount: { type: 'number' },
+                    uploadTime: { type: 'string' }
+                  }
+                }
+              }
             }
-            return { value: data }
+          }
         }
-    })
-
-    // Helper function สำหรับ save file
-    async function saveFile(fileObj, uploadsDir) {
-        const timestamp = Date.now()
-        const fileExtension = path.extname(fileObj.filename || '')
-        const safeFilename = `${timestamp}_${Math.random().toString(36).substring(7)}${fileExtension}`
-        const finalPath = path.join(uploadsDir, safeFilename)
-
-        const buffer = await fileObj.toBuffer()
-        await fs.promises.writeFile(finalPath, buffer)
-
-        return {
-            fileId: `file_${timestamp}_${Math.random().toString(36).substring(7)}`,
-            filename: safeFilename,
-            originalName: fileObj.filename,
-            size: buffer.length,
-            mimetype: fileObj.mimetype,
-            url: `http://localhost:3100/uploads/${safeFilename}`
-        }
+      }
     }
+  }, async (request, reply) => {
+    try {
+      // ✅ ใช้ plugin method
+      const { files, fields } = await request.parseMultipart()
 
-    function ensureUploadsDir() {
-        const uploadsDir = path.join(__dirname, 'uploads')
-        if (!fs.existsSync(uploadsDir)) {
-            fs.mkdirSync(uploadsDir, { recursive: true })
+      console.log('🔌 Using @aegisx/fastify-multipart plugin')
+      console.log('📁 Files:', files.length)
+      console.log('📝 Fields:', Object.keys(fields))
+
+      if (!files || files.length === 0) {
+        return reply.code(400).send({
+          success: false,
+          message: 'ไม่พบไฟล์ที่ต้องการอัปโหลด'
+        })
+      }
+
+      if (!fields.title) {
+        return reply.code(400).send({
+          success: false,
+          message: 'กรุณาใส่ชื่อไฟล์'
+        })
+      }
+
+      const uploadsDir = ensureUploadsDir()
+      const fileInfo = await saveFile(files[0], uploadsDir)
+
+      return {
+        success: true,
+        message: 'อัปโหลดไฟล์สำเร็จ (ใช้ Plugin)',
+        pluginUsed: '@aegisx/fastify-multipart',
+        data: {
+          fileId: fileInfo.fileId,
+          filename: fileInfo.filename,
+          originalName: fileInfo.originalName,
+          size: fileInfo.size,
+          mimetype: fileInfo.mimetype,
+          url: fileInfo.url,
+
+          // ✅ Text fields เป็น string โดยตรง!
+          title: fields.title,
+          description: fields.description || '',
+
+          debug: {
+            fieldsReceived: Object.keys(fields),
+            fileCount: files.length,
+            uploadTime: new Date().toISOString()
+          }
         }
-        return uploadsDir
+      }
+    } catch (error) {
+      fastify.log.error(error)
+      return reply.code(500).send({
+        success: false,
+        message: 'เกิดข้อผิดพลาด: ' + error.message
+      })
     }
+  })
 
-    // 🏠 Home
-    fastify.get('/', async () => {
-        return {
-            message: '🎉 Testing @aegisx/fastify-multipart Plugin',
-            version: '1.0.0',
-            plugin: '@aegisx/fastify-multipart',
-            features: [
-                '✅ Text fields เป็น string โดยตรง',
-                '✅ ปุ่ม Browse ใน Swagger UI ทำงานได้',
-                '✅ ไม่มี validation errors',
-                '✅ รองรับ multiple files',
-                '✅ Auto cleanup temp files'
-            ],
-            links: {
-                docs: 'http://localhost:3100/docs',
-                testForm: 'http://localhost:3100/test-form'
-            }
-        }
-    })
-
-    // 📄 Single file upload
-    fastify.post('/upload/single', {
-        schema: {
-            summary: 'อัปโหลดไฟล์เดียว (ใช้ Plugin)',
-            description: 'ทดสอบ plugin @aegisx/fastify-multipart',
-            tags: ['Plugin Test'],
-            consumes: ['multipart/form-data'],
-            body: {
-                type: 'object',
-                properties: {
-                    file: {
-                        type: 'string',
-                        format: 'binary',
-                        description: 'ไฟล์ที่ต้องการอัปโหลด'
-                    },
-                    title: {
-                        type: 'string',
-                        description: 'ชื่อไฟล์'
-                    },
-                    description: {
-                        type: 'string',
-                        description: 'คำอธิบาย'
-                    }
-                },
-                required: ['file', 'title']
+  // 📄📄 Multiple files upload
+  fastify.post('/upload/multiple', {
+    schema: {
+      summary: 'อัปโหลดหลายไฟล์ (ใช้ Plugin)',
+      description: 'ทดสอบ plugin กับหลายไฟล์',
+      tags: ['Plugin Test'],
+      consumes: ['multipart/form-data'],
+      body: {
+        type: 'object',
+        properties: {
+          files: {
+            type: 'array',
+            items: {
+              type: 'string',
+              format: 'binary'
             },
-            response: {
-                200: {
-                    description: 'อัปโหลดสำเร็จ',
+            description: 'หลายไฟล์ที่ต้องการอัปโหลด'
+          },
+          albumName: {
+            type: 'string',
+            description: 'ชื่ออัลบั้ม'
+          },
+          tags: {
+            type: 'string',
+            description: 'แท็ก (คั่นด้วย comma)'
+          }
+        },
+        required: ['files', 'albumName']
+      },
+      response: {
+        200: {
+          description: 'อัปโหลดสำเร็จ',
+          type: 'object',
+          properties: {
+            success: { type: 'boolean' },
+            message: { type: 'string' },
+            pluginUsed: { type: 'string' },
+            data: {
+              type: 'object',
+              properties: {
+                uploadId: { type: 'string' },
+                totalFiles: { type: 'number' },
+                albumName: { type: 'string' },
+                tags: { type: 'array', items: { type: 'string' } },
+                files: {
+                  type: 'array',
+                  items: {
                     type: 'object',
                     properties: {
-                        success: { type: 'boolean' },
-                        message: { type: 'string' },
-                        pluginUsed: { type: 'string' },
-                        data: {
-                            type: 'object',
-                            properties: {
-                                fileId: { type: 'string' },
-                                filename: { type: 'string' },
-                                originalName: { type: 'string' },
-                                size: { type: 'number' },
-                                mimetype: { type: 'string' },
-                                url: { type: 'string' },
-                                title: { type: 'string' },
-                                description: { type: 'string' },
-                                debug: {
-                                    type: 'object',
-                                    properties: {
-                                        fieldsReceived: { type: 'array', items: { type: 'string' } },
-                                        fileCount: { type: 'number' },
-                                        uploadTime: { type: 'string' }
-                                    }
-                                }
-                            }
-                        }
+                      fileId: { type: 'string' },
+                      filename: { type: 'string' },
+                      originalName: { type: 'string' },
+                      size: { type: 'number' },
+                      mimetype: { type: 'string' },
+                      url: { type: 'string' }
                     }
+                  }
                 }
+              }
             }
+          }
         }
-    }, async (request, reply) => {
-        try {
-            // ✅ ใช้ plugin method
-            const { files, fields } = await request.parseMultipart()
+      }
+    }
+  }, async (request, reply) => {
+    try {
+      // ✅ ใช้ plugin method
+      const { files, fields } = await request.parseMultipart()
 
-            console.log('🔌 Using @aegisx/fastify-multipart plugin')
-            console.log('📁 Files:', files.length)
-            console.log('📝 Fields:', Object.keys(fields))
+      if (!files || files.length === 0) {
+        return reply.code(400).send({
+          success: false,
+          message: 'ไม่พบไฟล์ที่ต้องการอัปโหลด'
+        })
+      }
 
-            if (!files || files.length === 0) {
-                return reply.code(400).send({
-                    success: false,
-                    message: 'ไม่พบไฟล์ที่ต้องการอัปโหลด'
-                })
-            }
+      if (!fields.albumName) {
+        return reply.code(400).send({
+          success: false,
+          message: 'กรุณาใส่ชื่ออัลบั้ม'
+        })
+      }
 
-            if (!fields.title) {
-                return reply.code(400).send({
-                    success: false,
-                    message: 'กรุณาใส่ชื่อไฟล์'
-                })
-            }
+      const uploadsDir = ensureUploadsDir()
+      const processedFiles = []
 
-            const uploadsDir = ensureUploadsDir()
-            const fileInfo = await saveFile(files[0], uploadsDir)
+      for (const file of files) {
+        const fileInfo = await saveFile(file, uploadsDir)
+        processedFiles.push(fileInfo)
+      }
 
-            return {
-                success: true,
-                message: 'อัปโหลดไฟล์สำเร็จ (ใช้ Plugin)',
-                pluginUsed: '@aegisx/fastify-multipart',
-                data: {
-                    fileId: fileInfo.fileId,
-                    filename: fileInfo.filename,
-                    originalName: fileInfo.originalName,
-                    size: fileInfo.size,
-                    mimetype: fileInfo.mimetype,
-                    url: fileInfo.url,
-                    
-                    // ✅ Text fields เป็น string โดยตรง!
-                    title: fields.title,
-                    description: fields.description || '',
-                    
-                    debug: {
-                        fieldsReceived: Object.keys(fields),
-                        fileCount: files.length,
-                        uploadTime: new Date().toISOString()
-                    }
-                }
-            }
-        } catch (error) {
-            fastify.log.error(error)
-            return reply.code(500).send({
-                success: false,
-                message: 'เกิดข้อผิดพลาด: ' + error.message
-            })
+      const tags = fields.tags ? fields.tags.split(',').map(t => t.trim()).filter(t => t) : []
+
+      return {
+        success: true,
+        message: `อัปโหลด ${processedFiles.length} ไฟล์สำเร็จ (ใช้ Plugin)`,
+        pluginUsed: '@aegisx/fastify-multipart',
+        data: {
+          uploadId: `upload_${Date.now()}`,
+          totalFiles: processedFiles.length,
+          albumName: fields.albumName,
+          tags,
+          files: processedFiles
         }
-    })
+      }
+    } catch (error) {
+      fastify.log.error(error)
+      return reply.code(500).send({
+        success: false,
+        message: 'เกิดข้อผิดพลาด: ' + error.message
+      })
+    }
+  })
 
-    // 📄📄 Multiple files upload
-    fastify.post('/upload/multiple', {
-        schema: {
-            summary: 'อัปโหลดหลายไฟล์ (ใช้ Plugin)',
-            description: 'ทดสอบ plugin กับหลายไฟล์',
-            tags: ['Plugin Test'],
-            consumes: ['multipart/form-data'],
-            body: {
-                type: 'object',
-                properties: {
-                    files: {
-                        type: 'array',
-                        items: {
-                            type: 'string',
-                            format: 'binary'
-                        },
-                        description: 'หลายไฟล์ที่ต้องการอัปโหลด'
-                    },
-                    albumName: {
-                        type: 'string',
-                        description: 'ชื่ออัลบั้ม'
-                    },
-                    tags: {
-                        type: 'string',
-                        description: 'แท็ก (คั่นด้วย comma)'
-                    }
-                },
-                required: ['files', 'albumName']
-            },
-            response: {
-                200: {
-                    description: 'อัปโหลดสำเร็จ',
-                    type: 'object',
-                    properties: {
-                        success: { type: 'boolean' },
-                        message: { type: 'string' },
-                        pluginUsed: { type: 'string' },
-                        data: {
-                            type: 'object',
-                            properties: {
-                                uploadId: { type: 'string' },
-                                totalFiles: { type: 'number' },
-                                albumName: { type: 'string' },
-                                tags: { type: 'array', items: { type: 'string' } },
-                                files: {
-                                    type: 'array',
-                                    items: {
-                                        type: 'object',
-                                        properties: {
-                                            fileId: { type: 'string' },
-                                            filename: { type: 'string' },
-                                            originalName: { type: 'string' },
-                                            size: { type: 'number' },
-                                            mimetype: { type: 'string' },
-                                            url: { type: 'string' }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }, async (request, reply) => {
-        try {
-            // ✅ ใช้ plugin method
-            const { files, fields } = await request.parseMultipart()
-
-            if (!files || files.length === 0) {
-                return reply.code(400).send({
-                    success: false,
-                    message: 'ไม่พบไฟล์ที่ต้องการอัปโหลด'
-                })
-            }
-
-            if (!fields.albumName) {
-                return reply.code(400).send({
-                    success: false,
-                    message: 'กรุณาใส่ชื่ออัลบั้ม'
-                })
-            }
-
-            const uploadsDir = ensureUploadsDir()
-            const processedFiles = []
-
-            for (const file of files) {
-                const fileInfo = await saveFile(file, uploadsDir)
-                processedFiles.push(fileInfo)
-            }
-
-            const tags = fields.tags ? fields.tags.split(',').map(t => t.trim()).filter(t => t) : []
-
-            return {
-                success: true,
-                message: `อัปโหลด ${processedFiles.length} ไฟล์สำเร็จ (ใช้ Plugin)`,
-                pluginUsed: '@aegisx/fastify-multipart',
-                data: {
-                    uploadId: `upload_${Date.now()}`,
-                    totalFiles: processedFiles.length,
-                    albumName: fields.albumName,
-                    tags,
-                    files: processedFiles
-                }
-            }
-        } catch (error) {
-            fastify.log.error(error)
-            return reply.code(500).send({
-                success: false,
-                message: 'เกิดข้อผิดพลาด: ' + error.message
-            })
-        }
-    })
-
-    // 📋 Test form page
-    fastify.get('/test-form', async (request, reply) => {
-        const html = `
+  // 📋 Test form page
+  fastify.get('/test-form', async (request, reply) => {
+    const html = `
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -478,25 +478,25 @@ async function start() {
     </div>
 </body>
 </html>`
-        
-        reply.type('text/html')
-        return html
-    })
 
-    await fastify.listen({ port: 3100, host: '0.0.0.0' })
-    console.log('🔌 Plugin Test Server running at:')
-    console.log('   📱 Home: http://localhost:3100')
-    console.log('   📋 Test Forms: http://localhost:3100/test-form')
-    console.log('   📖 Swagger UI: http://localhost:3100/docs')
-    console.log('')
-    console.log('🎯 Testing @aegisx/fastify-multipart Plugin:')
-    console.log('   • ใช้ plugin จริงแล้ว ไม่ใช่ helper function')
-    console.log('   • ทดสอบได้ทั้ง single และ multiple files')
-    console.log('   • Text fields เป็น string โดยตรง')
-    console.log('   • ปุ่ม Browse ใน Swagger UI ทำงานได้')
+    reply.type('text/html')
+    return html
+  })
+
+  await fastify.listen({ port: 3100, host: '0.0.0.0' })
+  console.log('🔌 Plugin Test Server running at:')
+  console.log('   📱 Home: http://localhost:3100')
+  console.log('   📋 Test Forms: http://localhost:3100/test-form')
+  console.log('   📖 Swagger UI: http://localhost:3100/docs')
+  console.log('')
+  console.log('🎯 Testing @aegisx/fastify-multipart Plugin:')
+  console.log('   • ใช้ plugin จริงแล้ว ไม่ใช่ helper function')
+  console.log('   • ทดสอบได้ทั้ง single และ multiple files')
+  console.log('   • Text fields เป็น string โดยตรง')
+  console.log('   • ปุ่ม Browse ใน Swagger UI ทำงานได้')
 }
 
 start().catch(err => {
-    console.error('❌ Error starting plugin test server:', err)
-    process.exit(1)
+  console.error('❌ Error starting plugin test server:', err)
+  process.exit(1)
 })

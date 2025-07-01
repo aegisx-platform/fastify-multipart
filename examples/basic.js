@@ -1,6 +1,6 @@
 /**
  * Basic Example for @aegisx/fastify-multipart
- * 
+ *
  * Simple demonstration of plugin usage with minimal setup.
  * Run: node examples/basic.js
  * Test: curl -X POST http://localhost:3000/upload -F "name=test" -F "file=@package.json"

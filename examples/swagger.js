@@ -5,7 +5,7 @@ const multipart = require('../index')
 const swagger = require('@fastify/swagger')
 const swaggerUI = require('@fastify/swagger-ui')
 
-async function start() {
+async function start () {
   // Register Swagger
   await fastify.register(swagger, {
     swagger: {
@@ -45,7 +45,7 @@ async function start() {
 
   // Custom validation bypass for multipart routes
   fastify.setValidatorCompiler(({ schema, method, url, httpPart }) => {
-    return function validate(data) {
+    return function validate (data) {
       // Skip body validation for multipart routes
       if (httpPart === 'body' && url && (url.includes('products') || url.includes('users') || url.includes('documents'))) {
         return { value: data }
@@ -64,32 +64,32 @@ async function start() {
       body: {
         type: 'object',
         properties: {
-          name: { 
+          name: {
             type: 'string',
             description: 'Product name'
           },
-          category: { 
+          category: {
             type: 'string',
             description: 'Product category',
             enum: ['electronics', 'clothing', 'food', 'other']
           },
-          price: { 
+          price: {
             type: 'string',
             description: 'Product price'
           },
-          description: { 
+          description: {
             type: 'string',
             description: 'Product description'
           },
-          image: { 
-            type: 'string', 
+          image: {
+            type: 'string',
             format: 'binary',
             description: 'Product main image'
           },
           gallery: {
             type: 'array',
-            items: { 
-              type: 'string', 
+            items: {
+              type: 'string',
               format: 'binary'
             },
             description: 'Additional product images'
@@ -107,7 +107,7 @@ async function start() {
             category: { type: 'string' },
             price: { type: 'number' },
             description: { type: 'string' },
-            mainImage: { 
+            mainImage: {
               type: 'object',
               properties: {
                 filename: { type: 'string' },
@@ -132,7 +132,7 @@ async function start() {
     }
   }, async (request, reply) => {
     const { files, fields } = await request.parseMultipart()
-    
+
     // Fields are plain strings - perfect for Swagger UI!
     console.log('Product name:', fields.name)
     console.log('Category:', fields.category)
@@ -184,8 +184,8 @@ async function start() {
           firstName: { type: 'string' },
           lastName: { type: 'string' },
           bio: { type: 'string' },
-          avatar: { 
-            type: 'string', 
+          avatar: {
+            type: 'string',
             format: 'binary',
             description: 'Profile picture'
           }
@@ -212,7 +212,7 @@ async function start() {
     }
   }, async (request, reply) => {
     const { files, fields } = await request.parseMultipart()
-    
+
     // All text fields are plain strings
     const user = {
       firstName: fields.firstName,
@@ -242,13 +242,13 @@ async function start() {
         type: 'object',
         properties: {
           title: { type: 'string' },
-          type: { 
+          type: {
             type: 'string',
             enum: ['pdf', 'doc', 'xlsx', 'other']
           },
           tags: { type: 'string', description: 'Comma-separated tags' },
-          file: { 
-            type: 'string', 
+          file: {
+            type: 'string',
             format: 'binary'
           }
         },
@@ -257,7 +257,7 @@ async function start() {
     }
   }, async (request, reply) => {
     const { files, fields } = await request.parseMultipart()
-    
+
     if (files.length === 0) {
       return reply.code(400).send({ error: 'No file uploaded' })
     }

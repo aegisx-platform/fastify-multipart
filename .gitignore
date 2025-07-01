@@ -144,3 +144,10 @@ dist
 # Test artifacts
 test-artifacts/
 .tap/
+
+# Temporary upload files (for testing)
+temp/
+uploads/
+
+# Semantic release
+.semanticrc

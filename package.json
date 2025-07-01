@@ -14,6 +14,7 @@
     "example:streaming": "node examples/streaming-upload.js",
     "example:errors": "node examples/error-handling.js",
     "example:complete": "node examples/complete-usage-example.js",
+    "semantic-release": "semantic-release",
     "publish": "npm publish --access public"
   },
   "keywords": [
@@ -39,17 +40,22 @@
   },
   "homepage": "https://github.com/aegisx-platform/fastify-multipart#readme",
   "dependencies": {
+    "@fastify/error": "^3.4.0",
     "busboy": "^1.6.0",
-    "fastify-plugin": "^4.5.0",
-    "@fastify/error": "^3.4.0"
+    "fastify-plugin": "^4.5.0"
   },
   "devDependencies": {
-    "fastify": "^4.25.0",
-    "standard": "^17.1.0",
-    "tap": "^18.5.0",
     "@fastify/swagger": "^8.12.0",
     "@fastify/swagger-ui": "^2.0.0",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^11.0.3",
+    "@semantic-release/npm": "^12.0.2",
+    "fastify": "^4.25.0",
     "form-data": "^4.0.0",
+    "semantic-release": "^24.2.6",
+    "standard": "^17.1.0",
+    "tap": "^18.5.0",
     "undici": "^6.2.0"
   },
   "peerDependencies": {

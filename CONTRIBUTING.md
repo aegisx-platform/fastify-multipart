@@ -52,9 +52,13 @@ Feature suggestions are welcome! Please:
    npm run lint:fix  # Fix automatically
    ```
 
+6. **Git hooks are automatically installed:**
+   - **pre-commit**: Runs linting and tests
+   - **commit-msg**: Validates commit message format
+
 ## 📝 Commit Convention
 
-This project uses [Conventional Commits](https://conventionalcommits.org/) for automated versioning. Please format your commits as:
+This project uses [Conventional Commits](https://conventionalcommits.org/) for automated versioning and enforces it with **commitlint**. Please format your commits as:
 
 ```
 type(scope): description
@@ -66,20 +70,54 @@ type(scope): description
 
 ### Types:
 - `feat`: New feature
-- `fix`: Bug fix
+- `fix`: Bug fix  
 - `docs`: Documentation changes
 - `style`: Code style changes (formatting, etc.)
 - `refactor`: Code refactoring
 - `perf`: Performance improvements
 - `test`: Adding or updating tests
 - `chore`: Maintenance tasks
+- `ci`: CI/CD changes
+- `build`: Build system changes
+- `revert`: Revert changes
+
+### Scopes (optional):
+- `plugin`: Core plugin changes
+- `multipart`: Multipart handling
+- `swagger`: Swagger integration
+- `examples`: Example files
+- `docs`: Documentation
+- `tests`: Test files
+- `ci`: CI/CD configuration
+- `deps`: Dependencies
+
+### Rules:
+- **Subject**: 3-72 characters, no period at end
+- **Type**: Required, lowercase
+- **Scope**: Optional but recommended
+- **Body**: Max 100 characters per line
 
 ### Examples:
 ```bash
-feat: add streaming upload support
-fix: resolve swagger ui validation errors
-docs: update README with new examples
-test: add tests for error handling
+feat(plugin): add streaming upload support
+fix(swagger): resolve ui validation errors
+docs(examples): update README with new examples
+test(multipart): add tests for error handling
+chore(deps): update dependencies
+```
+
+### Validation:
+Commits are automatically validated by commitlint. Invalid commits will be rejected:
+
+```bash
+# ✅ Valid
+feat(plugin): add new feature
+fix: resolve bug
+
+# ❌ Invalid
+Feature: add new feature (wrong type)
+fix (missing colon)
+feat: (empty subject)
 ```
 
 ## 🧪 Testing

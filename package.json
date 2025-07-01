@@ -1,0 +1,66 @@
+{
+  "name": "@aegisx/fastify-multipart",
+  "version": "1.0.0",
+  "description": "Production-ready Fastify plugin for multipart/form-data with clean API and full Swagger UI support",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "test": "tap test/*.test.js",
+    "test:watch": "tap test/*.test.js --watch",
+    "lint": "standard",
+    "lint:fix": "standard --fix",
+    "example:basic": "node examples/basic-usage.js",
+    "example:swagger": "node examples/swagger-integration.js",
+    "example:streaming": "node examples/streaming-upload.js",
+    "example:errors": "node examples/error-handling.js",
+    "example:complete": "node examples/complete-usage-example.js",
+    "publish": "npm publish --access public"
+  },
+  "keywords": [
+    "fastify",
+    "fastify-plugin",
+    "multipart",
+    "file-upload",
+    "swagger",
+    "swagger-ui",
+    "busboy",
+    "form-data",
+    "clean-api",
+    "aegisx"
+  ],
+  "author": "Sathit Seethaphon<dixonsatit@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aegisx-platform/fastify-multipart.git"
+  },
+  "bugs": {
+    "url": "https://github.com/aegisx-platform/fastify-multipart/issues"
+  },
+  "homepage": "https://github.com/aegisx-platform/fastify-multipart#readme",
+  "dependencies": {
+    "busboy": "^1.6.0",
+    "fastify-plugin": "^4.5.0",
+    "@fastify/error": "^3.4.0"
+  },
+  "devDependencies": {
+    "fastify": "^4.25.0",
+    "standard": "^17.1.0",
+    "tap": "^18.5.0",
+    "@fastify/swagger": "^8.12.0",
+    "@fastify/swagger-ui": "^2.0.0",
+    "form-data": "^4.0.0",
+    "undici": "^6.2.0"
+  },
+  "peerDependencies": {
+    "fastify": "^4.0.0"
+  },
+  "engines": {
+    "node": ">=14"
+  },
+  "standard": {
+    "ignore": [
+      "test/**"
+    ]
+  }
+}

@@ -1,5 +1,5 @@
 {
-  "name": "aegisx-fastify-multipart",
+  "name": "@aegisx/fastify-multipart",
   "version": "1.0.0",
   "description": "Production-ready Fastify plugin for multipart/form-data with clean API and full Swagger UI support",
   "main": "index.js",

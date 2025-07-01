@@ -1,4 +1,4 @@
-# aegisx-fastify-multipart
+# @aegisx/fastify-multipart
 
 Production-ready Fastify plugin for handling `multipart/form-data` with a clean API and full Swagger UI support. This plugin solves the common issue where text fields become objects with `{ value: "string" }` instead of plain strings, ensuring perfect compatibility with Swagger UI forms.
 
@@ -15,14 +15,14 @@ Production-ready Fastify plugin for handling `multipart/form-data` with a clean 
 ## Installation
 
 ```bash
-npm install aegisx-fastify-multipart
+npm install @aegisx/fastify-multipart
 ```
 
 ## Quick Start
 
 ```javascript
 const fastify = require('fastify')()
-const multipart = require('aegisx-fastify-multipart')
+const multipart = require('@aegisx/fastify-multipart')
 
 // Register the plugin
 await fastify.register(multipart)
@@ -177,7 +177,7 @@ This plugin works perfectly with Swagger UI form submissions. Here's the recomme
 
 ```javascript
 const fastify = require('fastify')()
-const multipart = require('aegisx-fastify-multipart')
+const multipart = require('@aegisx/fastify-multipart')
 const swagger = require('@fastify/swagger')
 const swaggerUI = require('@fastify/swagger-ui')
 
@@ -265,9 +265,9 @@ fastify.post('/upload', async (request, reply) => {
 })
 ```
 
-### After (with aegisx-fastify-multipart):
+### After (with @aegisx/fastify-multipart):
 ```javascript
-const multipart = require('aegisx-fastify-multipart')
+const multipart = require('@aegisx/fastify-multipart')
 await fastify.register(multipart)
 
 fastify.post('/upload', async (request, reply) => {
@@ -283,7 +283,7 @@ fastify.post('/upload', async (request, reply) => {
 
 ## Comparison with @fastify/multipart
 
-| Feature | aegisx-fastify-multipart | @fastify/multipart |
+| Feature | @aegisx/fastify-multipart | @fastify/multipart |
 |---------|---------------------------|-------------------|
 | Text fields format | Plain strings ✅ | Wrapped objects `{ value }` |
 | Swagger UI compatibility | Full support ✅ | Requires workarounds |
@@ -297,7 +297,7 @@ fastify.post('/upload', async (request, reply) => {
 
 ```typescript
 import fastify from 'fastify'
-import multipart, { MultipartFile, MultipartParseResult } from 'aegisx-fastify-multipart'
+import multipart, { MultipartFile, MultipartParseResult } from '@aegisx/fastify-multipart'
 
 const app = fastify()
 await app.register(multipart)
@@ -447,7 +447,7 @@ Use this simple test to verify the plugin works:
 
 ```javascript
 const fastify = require('fastify')()
-const multipart = require('aegisx-fastify-multipart')
+const multipart = require('@aegisx/fastify-multipart')
 
 await fastify.register(multipart, { autoContentTypeParser: false })
 fastify.addContentTypeParser('multipart/form-data', (req, payload, done) => done(null, payload))

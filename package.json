@@ -16,7 +16,7 @@
     "example:complete": "node examples/complete-usage-example.js",
     "semantic-release": "semantic-release",
     "publish": "npm publish --access public",
-    "prepare": "husky",
+    "prepare": "husky install",
     "commitlint": "commitlint --edit"
   },
   "keywords": [

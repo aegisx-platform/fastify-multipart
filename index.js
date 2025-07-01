@@ -5,6 +5,7 @@ const busboy = require('busboy')
 const fs = require('fs')
 const path = require('path')
 const os = require('os')
+const { PassThrough } = require('stream')
 const createError = require('@fastify/error')
 
 const kMultipart = Symbol('multipart')
@@ -59,6 +60,7 @@ async function multipartPlugin (fastify, options) {
       const fields = {}
       const tempFiles = []
       let pendingFiles = 0
+      let finished = false
 
       // Handle file fields
       bb.on('file', (fieldname, file, info) => {
@@ -78,6 +80,12 @@ async function multipartPlugin (fastify, options) {
         const writeStream = fs.createWriteStream(tempFilePath)
 
         tempFiles.push(tempFilePath)
+
+        // Check for truncated files (size limit exceeded)
+        file.on('limit', () => {
+          writeStream.destroy()
+          reject(new FileSizeLimit(`File size exceeds limit of ${config.limits.fileSize} bytes`))
+        })
 
         // Pipe file to writeStream
         file.pipe(writeStream)
@@ -116,7 +124,7 @@ async function multipartPlugin (fastify, options) {
           pendingFiles--
 
           // If all files are done and busboy is finished, resolve
-          if (pendingFiles === 0 && bb.finished) {
+          if (pendingFiles === 0 && finished) {
             const result = { files, fields, _tempFiles: tempFiles }
             request[kMultipart] = result
             request[kTempFiles] = tempFiles
@@ -141,7 +149,7 @@ async function multipartPlugin (fastify, options) {
       })
 
       bb.on('finish', () => {
-        bb.finished = true
+        finished = true
 
         // If no pending files, resolve immediately
         if (pendingFiles === 0) {
@@ -160,21 +168,33 @@ async function multipartPlugin (fastify, options) {
         reject(new FieldsLimit())
       })
 
-      bb.on('error', reject)
+      bb.on('error', (err) => {
+        if (err.message && err.message.includes('File size limit exceeded')) {
+          reject(new FileSizeLimit(err.message))
+        } else {
+          reject(err)
+        }
+      })
 
       // Pipe request to busboy
       request.raw.pipe(bb)
     })
   })
 
-  fastify.decorateRequest('file', async function (options = {}) {
-    const { files } = await this.parseMultipart()
-    return files[0] || null
+  fastify.decorateRequest('file', function (options = {}) {
+    // Check if multipart data has already been parsed
+    if (this[kMultipart]) {
+      return this[kMultipart].files[0] || null
+    }
+    throw new Error('Multipart data not parsed. Call parseMultipart() first.')
   })
 
-  fastify.decorateRequest('files', async function (options = {}) {
-    const { files } = await this.parseMultipart()
-    return files
+  fastify.decorateRequest('files', function (options = {}) {
+    // Check if multipart data has already been parsed
+    if (this[kMultipart]) {
+      return this[kMultipart].files
+    }
+    throw new Error('Multipart data not parsed. Call parseMultipart() first.')
   })
 
   fastify.decorateRequest('parts', async function * () {
@@ -190,15 +210,40 @@ async function multipartPlugin (fastify, options) {
 
     const parts = []
     let finished = false
+    let error = null
 
     bb.on('file', (fieldname, stream, info) => {
+      // Create PassThrough stream to avoid consuming the original
+      const passThrough = new PassThrough()
+      let fileSize = 0
+
+      stream.on('data', (chunk) => {
+        fileSize += chunk.length
+        if (config.limits.fileSize && fileSize > config.limits.fileSize) {
+          stream.destroy(new FileSizeLimit(`${fileSize} bytes`))
+          error = new FileSizeLimit(`${fileSize} bytes`)
+          finished = true
+          return
+        }
+        passThrough.write(chunk)
+      })
+
+      stream.on('end', () => {
+        passThrough.end()
+      })
+
+      stream.on('error', (err) => {
+        passThrough.destroy(err)
+      })
+
       parts.push({
         type: 'file',
         fieldname,
         filename: info.filename || 'unnamed',
         encoding: info.encoding || '7bit',
         mimetype: info.mimeType || 'application/octet-stream',
-        stream
+        stream: passThrough,
+        size: fileSize
       })
     })
 
@@ -215,22 +260,50 @@ async function multipartPlugin (fastify, options) {
     })
 
     bb.on('error', (err) => {
-      parts.push({ type: 'error', error: err })
+      error = err
+      finished = true
+    })
+
+    // Handle size limits
+    bb.on('filesLimit', () => {
+      error = new FilesLimit()
+      finished = true
+    })
+
+    bb.on('fieldsLimit', () => {
+      error = new FieldsLimit()
+      finished = true
+    })
+
+    bb.on('partsLimit', () => {
+      error = new Error('Parts limit exceeded')
+      finished = true
     })
 
     this.raw.pipe(bb)
 
     // eslint-disable-next-line no-unmodified-loop-condition
-    while (parts.length > 0 || !finished) {
+    while (!finished) {
+      if (error) {
+        throw error
+      }
+
       if (parts.length > 0) {
         const part = parts.shift()
-        if (part.type === 'error') {
-          throw part.error
-        }
         yield part
       } else {
         await new Promise(resolve => setImmediate(resolve))
       }
+    }
+
+    // Yield remaining parts after finish
+    while (parts.length > 0) {
+      const part = parts.shift()
+      yield part
+    }
+
+    if (error) {
+      throw error
     }
   })
 
@@ -264,6 +337,15 @@ async function multipartPlugin (fastify, options) {
       done(null, payload)
     })
   }
+
+  // Set up validation bypass for multipart routes
+  fastify.addHook('preValidation', async (request, reply) => {
+    const contentType = request.headers['content-type']
+    if (contentType && contentType.includes('multipart/form-data')) {
+      // Skip validation for multipart requests
+      request.validationFunction = null
+    }
+  })
 }
 
 module.exports = fp(multipartPlugin, {

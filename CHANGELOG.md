@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Compatible with Fastify v4 and v5
 - Complete documentation and examples
 - Semantic release automation
+- Support for Node.js >= 18
+- CI/CD matrix testing for Node.js 18, 20, 22
 
 ### Features
 - Clean API with single method returns all data

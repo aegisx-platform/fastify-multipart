@@ -12,6 +12,11 @@ Production-ready Fastify plugin for handling `multipart/form-data` with a clean 
 - ✅ **Streaming Support**: Efficient file handling with streams
 - ✅ **Configurable Limits**: Control file sizes, field counts, and more
 
+## Requirements
+
+- Node.js >= 18
+- Fastify 4.x or 5.x
+
 ## Installation
 
 ```bash
@@ -292,6 +297,8 @@ fastify.post('/upload', async (request, reply) => {
 | Automatic cleanup | Yes ✅ | Yes ✅ |
 | Streaming support | Yes ✅ | Yes ✅ |
 | Field validation | Direct validation ✅ | Complex validation |
+| Node.js support | >= 18 | >= 14 |
+| CI/CD tested | Node 18, 20, 22 ✅ | Varies |
 
 ## TypeScript Usage
 
@@ -461,9 +468,106 @@ fastify.post('/test', async (request) => {
 // curl -X POST http://localhost:3000/test -F "name=test" -F "file=@package.json"
 ```
 
+## Development
+
+### Requirements
+
+- Node.js >= 18
+- npm or yarn
+- Docker (optional, for matrix testing)
+
+### Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/aegisx-platform/fastify-multipart.git
+cd fastify-multipart
+
+# Install dependencies
+npm install
+
+# Run tests
+npm test
+
+# Run linting
+npm run lint
+
+# Run examples
+npm run example:basic
+npm run example:swagger
+npm run example:complete
+```
+
+### Testing
+
+The plugin is tested against multiple Node.js versions and Fastify versions:
+
+- **Node.js**: 18, 20, 22
+- **Fastify**: 4.x, 5.x
+
+#### Local Matrix Testing
+
+Test against different Node.js versions locally using Docker:
+
+```bash
+# Test with Node 18
+./test-node-18.sh
+
+# Test all combinations (requires Docker)
+./test-matrix.sh
+
+# Test with nvm (requires nvm installed)
+./test-matrix-nvm.sh
+```
+
+#### Manual Testing
+
+```bash
+# Test with specific Node version using Docker
+docker run --rm -v "$(pwd)":/app -w /app node:18-alpine sh -c "npm ci && npm test"
+docker run --rm -v "$(pwd)":/app -w /app node:20-alpine sh -c "npm ci && npm test"
+
+# Test with specific Fastify version
+npm install fastify@4.x && npm test
+npm install fastify@5.x && npm test
+```
+
+### CI/CD
+
+The project uses GitHub Actions for continuous integration:
+
+- **CI**: Runs on every push and pull request
+- **Matrix Testing**: Tests against Node.js 18, 20, 22 with Fastify 4.x and 5.x
+- **Security Audit**: Checks for vulnerabilities
+- **Semantic Release**: Automated version management and publishing
+
+### Commit Convention
+
+This project follows [Conventional Commits](https://www.conventionalcommits.org/):
+
+```bash
+# Format
+<type>(<scope>): <subject>
+
+# Examples
+feat(plugin): add support for custom temp directory
+fix(multipart): resolve file size limit error handling
+docs(readme): update installation instructions
+chore(deps): update fastify to v5
+```
+
+**Types**: feat, fix, docs, style, refactor, test, chore
+**Scopes**: plugin, multipart, swagger, examples, docs, tests, ci, deps
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'feat(plugin): add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## License
 
@@ -471,7 +575,7 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ## Support
 
-- 🐛 [Report bugs](https://github.com/aegisx/fastify-multipart/issues)
-- 💡 [Request features](https://github.com/aegisx/fastify-multipart/issues)
-- 📖 [Read documentation](https://github.com/aegisx/fastify-multipart#readme)
+- 🐛 [Report bugs](https://github.com/aegisx-platform/fastify-multipart/issues)
+- 💡 [Request features](https://github.com/aegisx-platform/fastify-multipart/issues)
+- 📖 [Read documentation](https://github.com/aegisx-platform/fastify-multipart#readme)
 

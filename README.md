@@ -474,3 +474,4 @@ MIT License - see [LICENSE](LICENSE) file for details.
 - 🐛 [Report bugs](https://github.com/aegisx/fastify-multipart/issues)
 - 💡 [Request features](https://github.com/aegisx/fastify-multipart/issues)
 - 📖 [Read documentation](https://github.com/aegisx/fastify-multipart#readme)
+

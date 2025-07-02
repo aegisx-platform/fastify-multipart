@@ -64,7 +64,7 @@
     "undici": "^6.2.0"
   },
   "peerDependencies": {
-    "fastify": "^4.0.0"
+    "fastify": "^4.0.0 || ^5.0.0"
   },
   "engines": {
     "node": ">=18"

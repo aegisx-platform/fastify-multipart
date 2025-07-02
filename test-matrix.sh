@@ -1,4 +1,4 @@
-#!/bin/bash
+29#!/bin/bash
 
 # Test matrix script for local testing
 echo "🧪 Running matrix tests locally..."

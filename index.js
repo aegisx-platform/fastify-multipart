@@ -349,6 +349,6 @@ async function multipartPlugin (fastify, options) {
 }
 
 module.exports = fp(multipartPlugin, {
-  fastify: '4.x',
+  fastify: '>=4.0.0',
   name: '@aegisx/fastify-multipart'
 })

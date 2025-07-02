@@ -148,6 +148,7 @@ test-artifacts/
 # Temporary upload files (for testing)
 temp/
 uploads/
+*.tmp
 
 # Semantic release
 .semanticrc

@@ -5,7 +5,7 @@
   "main": "index.js",
   "types": "index.d.ts",
   "scripts": {
-    "test": "tap test/*.test.js",
+    "test": "tap test/*.test.js --disable-coverage",
     "test:watch": "tap test/*.test.js --watch",
     "lint": "standard",
     "lint:fix": "standard --fix",

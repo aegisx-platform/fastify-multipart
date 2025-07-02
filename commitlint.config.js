@@ -1,5 +1,6 @@
 module.exports = {
   extends: ['@commitlint/config-conventional'],
+  ignores: [(commit) => commit.startsWith('chore(release):')],
   rules: {
     // Type enum
     'type-enum': [
@@ -38,7 +39,8 @@ module.exports = {
         'docs',
         'tests',
         'ci',
-        'deps'
+        'deps',
+        'release'
       ]
     ],
     // Make scope optional

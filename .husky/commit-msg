@@ -1,1 +1,5 @@
+# Skip commitlint for release commits with [skip ci]
+if grep -q '\[skip ci\]' "$1"; then
+  exit 0
+fi
 npx commitlint --edit $1

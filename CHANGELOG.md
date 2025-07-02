@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/aegisx-platform/fastify-multipart/compare/v1.0.0...v1.0.1) (2025-07-02)
+
+
+### Bug Fixes
+
+* add temporary file pattern to gitignore ([8d1d8ac](https://github.com/aegisx-platform/fastify-multipart/commit/8d1d8ace0051227a29e914f3b57a0c4d3f2a476d))
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
